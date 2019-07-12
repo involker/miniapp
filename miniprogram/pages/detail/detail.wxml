@@ -1,0 +1,4 @@
+<view class="item" wx:for="{{list}}" wx:key="{{index}}">
+  <view>{{item.time}}</view>
+  <view>{{item.step}}</view>
+</view>
