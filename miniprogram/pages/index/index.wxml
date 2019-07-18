@@ -1,9 +1,14 @@
 <!--index.wxml-->
-<button wx:if="{{showBtn}}" open-type="getUserInfo" bindgetuserinfo="onGetUserInfo">获取用户信息</button>
-<view class="container">
-  <view class="item" wx:for="{{list}}" wx:key="{{index}}" data-item="{{item}}" bindtap="gotoDetail">
-    <image class="avatar" src="{{item.avatarUrl}}"></image>
-    <view class="name">{{item.nickName}}</view>
-    <view class="step">{{item.count}}</view>
+<view class="body">
+  <button wx:if="{{showBtn}}" open-type="getUserInfo" bindgetuserinfo="onGetUserInfo">获取用户信息</button>
+  <view class="container">
+    <view class="item" wx:for="{{list}}" wx:key="{{index}}" data-item="{{item}}" bindtap="gotoDetail">
+      <image class="avatar" src="{{item.avatarUrl}}"></image>
+      <view class="name">{{item.nickName}}</view>
+      <view class="step">{{item.count}}</view>
+    </view>
   </view>
+</view>
+<view class="footer">
+  <view data-index="{{index}}" wx:for="{{tabs}}" wx:key="{{index}}"  class="{{active===index?'btn active':'btn'}}" bindtap="changeTab">{{item.name}}</view>
 </view>

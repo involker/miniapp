@@ -7,7 +7,43 @@ Page({
     showBtn:false,
     steps:[],
     list:[],
-    loading:true
+    loading:true,
+    active:0,
+    tabs:[
+      { name: '本周', time: 1 },
+      { name: '上周', time: 0 },
+    ]
+  },
+  changeTab:function(e){
+    let index = e.currentTarget.dataset.index
+    if(index === this.data.active) return
+    let {steps} = this.data
+    let list = this.setWeekData(steps,index)
+    this.setData({
+      active:index,
+      list
+    })
+  },
+  setWeekData:function(data,i){
+    let list = data.map(item => {
+      let steps = i === 0 ? this.getCurWeekData(item.steps) : this.getPreWeekData(item.steps)
+      console.log(steps)
+      let openId = item.openId
+      let count = steps.reduce((total, cur) => {
+        return total + (cur && cur.step ? cur.step : 0)
+      }, 0)
+      let temp = {
+        avatarUrl: item.avatarUrl,
+        nickName: item.nickName,
+        count,
+        steps,
+        openId,
+      }
+      return temp
+    }).sort(function (a, b) {
+      return b.count - a.count
+    })
+    return list
   },
   onGetUserInfo:function(e){
     this.init()
@@ -47,7 +83,7 @@ Page({
             })
             this.setData({
               avatarUrl: res.userInfo.avatarUrl,
-              userInfo: res.userInfo
+              userInfo: res.userInfo,
             })
           },
           fail: res => {
@@ -61,6 +97,9 @@ Page({
       }
     })
   },
+  onPullDownRefresh:function(){
+    this.init()
+  },
   onLoad: function() {
     wx.showLoading({
       title: '正在获取数据',
@@ -71,14 +110,29 @@ Page({
     this.init()
     
   },
+  getPreWeekData(list){
+    let time = new Date()
+    let curDay = time.getDay()
+    let D = time.getDate()
+    let M = time.getMonth()
+    let Y = time.getFullYear()
+    let endTime = new Date(Y,M,D).getTime() - curDay * 24 * 60 * 60 * 1000
+    let startTime = endTime - 7 * 24 * 60 * 60 * 1000
+    return list.filter(item => {
+      return item.timestamp > startTime / 1000 && item.timestamp <= endTime / 1000
+    })
+  },
   getCurWeekData(list){
-    let curDay = new Date().getDay()
-    let arr = []
-    for(let i=0;i<curDay;i++){
-      let temp = list[list.length-1-i]
-      arr.push(temp)
-    }
-    return arr
+    let time = new Date()
+    let curDay = time.getDay()
+    let D = time.getDate()
+    let M = time.getMonth()
+    let Y = time.getFullYear()
+    let endTime = new Date(Y,M,D).getTime()
+    let startTime = endTime - curDay * 24 * 60 * 60 * 1000
+    return list.filter(item => {
+      return item.timestamp > startTime / 1000 && item.timestamp <= endTime / 1000
+    })
   },
   gotoDetail:function(event){
     console.log(event)
@@ -99,28 +153,16 @@ Page({
           },
           success:(res)=>{
             let {data} = res.result
-            let list = data.map(item=>{
-              let curWeekSteps = _this.getCurWeekData(item.steps)
-              let openId = item.openId
-              let count = curWeekSteps.reduce((total,cur)=>{
-                return total + (cur&&cur.step?cur.step:0)
-              },0)
-              let temp = {
-                avatarUrl: item.avatarUrl,
-                nickName:item.nickName,
-                count,
-                curWeekSteps,
-                openId,
-              }
-              return temp
-            }).sort(function (a, b) {
-              return b.count - a.count
-            })
+            let {active} = _this.data
+            console.log(data)
+            let list = _this.setWeekData(data, active)
             wx.hideLoading()
+            wx.stopPullDownRefresh()
             _this.setData({
               list,
               loading:false,
-              showBtn:false
+              showBtn:false,
+              steps:data
             })
             
           }
