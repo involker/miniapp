@@ -1,4 +1,8 @@
-<view class="item" wx:for="{{list}}" wx:key="{{index}}">
-  <view>{{item.time}}</view>
-  <view>{{item.step}}</view>
+<canvas class="canvas" canvas-id='canvas' wx:if="{{showChart}}"></canvas>
+<view class="list" wx:if="{{!loading}}">
+  <view class="title">最近31天数据</view>
+  <view class="item" wx:for="{{list}}" wx:key="{{index}}">
+    <view>{{item.time}}</view>
+    <view>{{item.step}}</view>
+  </view>
 </view>

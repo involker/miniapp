@@ -1,6 +1,16 @@
 <!--index.wxml-->
 <view class="body">
-  <button wx:if="{{showBtn}}" open-type="getUserInfo" bindgetuserinfo="onGetUserInfo">获取用户信息</button>
+  <view class="canvas-container">
+    <canvas canvas-id='canvas'></canvas>
+    <view class="count">{{count}}</view>
+  </view>
+  <view class="tips" wx:if="{{ownStep<goal}}">本周目标{{goal}}步，距离达成目标还差{{goal-ownStep}}步</view>
+  <view class="tips" wx:if="{{ownStep>=goal}}">本周目标已达成</view>
+  <view class="tabs">
+    <view data-index="{{index}}" wx:for="{{tabs}}" wx:key="{{index}}"  class="{{active===index?'btn active':'btn'}}"            bindtap="changeTab">{{item.name}}
+    </view>
+  </view>
+  <button class="getuser" wx:if="{{showBtn}}" open-type="getUserInfo" bindgetuserinfo="onGetUserInfo">获取用户信息</button>
   <view class="container">
     <view class="item" wx:for="{{list}}" wx:key="{{index}}" data-item="{{item}}" bindtap="gotoDetail">
       <image class="avatar" src="{{item.avatarUrl}}"></image>
@@ -8,7 +18,4 @@
       <view class="step">{{item.count}}</view>
     </view>
   </view>
-</view>
-<view class="footer">
-  <view data-index="{{index}}" wx:for="{{tabs}}" wx:key="{{index}}"  class="{{active===index?'btn active':'btn'}}" bindtap="changeTab">{{item.name}}</view>
 </view>

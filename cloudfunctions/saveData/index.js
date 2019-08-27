@@ -12,7 +12,7 @@ exports.main = async (event, context) => {
       openId: wxContext.OPENID
     }).get()
     if (list.data.length){
-      return await collection.where({
+      await collection.where({
         openId: wxContext.OPENID
       }).update({
         data: {
@@ -21,8 +21,9 @@ exports.main = async (event, context) => {
           nickName
         }
       })
+      
     }else{
-      return await collection.add({
+      await collection.add({
         data: {
           openId: wxContext.OPENID,
           avatarUrl,
@@ -30,6 +31,9 @@ exports.main = async (event, context) => {
           steps: []
         }
       })
+    }
+    return {
+      openId: wxContext.OPENID
     }
   } catch (e) {
     return collection

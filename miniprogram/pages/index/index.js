@@ -3,6 +3,9 @@ const app = getApp()
 
 Page({
   data: {
+    goal:50000,
+    count:0,
+    ownStep:0,
     userInfo:{},
     showBtn:false,
     steps:[],
@@ -27,7 +30,6 @@ Page({
   setWeekData:function(data,i){
     let list = data.map(item => {
       let steps = i === 0 ? this.getCurWeekData(item.steps) : this.getPreWeekData(item.steps)
-      console.log(steps)
       let openId = item.openId
       let count = steps.reduce((total, cur) => {
         return total + (cur && cur.step ? cur.step : 0)
@@ -49,16 +51,17 @@ Page({
     this.init()
   },
   init:function(){
+    this.setData({
+      active:0
+    })
     let _this = this
     let _wx = wx
     wx.getSetting({
       success: res => {
         wx.getUserInfo({
           fail:res=>{
-            console.log(res)
           },
           complete:res=>{
-            console.log(res)
           },
           success: res => {
             this.setData({
@@ -72,6 +75,10 @@ Page({
                 userInfo: res.userInfo
               },
               success: res => {
+                console.log(res)
+                _this.setData({
+                  openId:res.result.openId
+                })
                 _this.getStep()
 
                 // _wx.login({
@@ -99,11 +106,21 @@ Page({
   },
   onPullDownRefresh:function(){
     this.init()
+    wx.showLoading({
+      title: '正在加载',
+    })
   },
   onLoad: function() {
     wx.showLoading({
       title: '正在获取数据',
     })
+    var ctx = wx.createCanvasContext('canvas')
+    ctx.setLineWidth(5)
+    ctx.beginPath()
+    ctx.setStrokeStyle('#ddd')
+    ctx.arc(55, 55, 50, 0, 2 * Math.PI)
+    ctx.stroke();
+    ctx.draw();
     if (!wx.cloud) {
       return
     }
@@ -138,8 +155,44 @@ Page({
     console.log(event)
     let {openId} = event.currentTarget.dataset.item
     wx.navigateTo({
-      url: `/pages/detail/detail?id=${openId}`,
+      url: `/pages/detail/detail?id=${openId}&t=${this.data.active}`,
     })
+  },
+  setProgress:function(list){
+    let {openId,goal} = this.data
+    let ownStep = list.filter(item=>item.openId === openId)
+    let count = ownStep[0].count
+    let percent = Math.ceil(count/goal*100)
+    let p = 0
+    let _this = this
+    var ctx = wx.createCanvasContext('canvas')
+    _this.setData({
+      ownStep:count
+    })
+    function foo() {
+      p++
+      ctx.setLineWidth(5)
+      ctx.beginPath()
+      ctx.setStrokeStyle('#ddd')
+      ctx.arc(55, 55, 50, 0, 2 * Math.PI)
+      ctx.stroke();
+      ctx.beginPath()
+      ctx.setStrokeStyle("#1aad19")
+      ctx.arc(55, 55, 50, 0.5 * Math.PI, (2 * p/100 + 0.5) * Math.PI)
+      ctx.stroke()
+      ctx.draw()
+      let temp = Math.ceil(p / 100 * goal) > count ? count : Math.ceil(p / 100 * goal)
+      _this.setData({
+        count: temp,
+      })
+      if (p === percent) {
+        // requestAnimationFrame(foo)
+        clearInterval(_this.id)
+      }
+    }
+    // requestAnimationFrame(foo)
+    _this.id = setInterval(foo,16)
+    
   },
   getStep:function(e){
     let _this = this
@@ -154,10 +207,10 @@ Page({
           success:(res)=>{
             let {data} = res.result
             let {active} = _this.data
-            console.log(data)
             let list = _this.setWeekData(data, active)
             wx.hideLoading()
             wx.stopPullDownRefresh()
+            _this.setProgress(list)
             _this.setData({
               list,
               loading:false,

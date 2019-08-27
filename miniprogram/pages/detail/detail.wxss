@@ -1,3 +1,17 @@
+page{
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.list{
+  flex:1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.title{
+  padding: 0 20rpx;
+}
 .item{
   display: flex;
   align-items: center;
@@ -8,4 +22,9 @@
 }
 .item +.item{
   border-top: 1px solid #ddd;
+}
+canvas{
+  width: 100%;
+  height: 600rpx;
+  flex-shrink: 0;
 }
